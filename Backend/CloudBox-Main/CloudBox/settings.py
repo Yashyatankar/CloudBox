@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 
 ]
 
-
+#Redis cache
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -58,7 +58,7 @@ CACHES = {
     }
 }
 
-
+#DRF
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
