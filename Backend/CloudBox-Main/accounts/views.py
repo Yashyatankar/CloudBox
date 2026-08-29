@@ -15,7 +15,7 @@ class Register(APIView):
 
     def post(request):
 
-
+        
 
         return Response('register')
 
@@ -95,7 +95,9 @@ class VarifyOTP(APIView):
             record["attempts"] += 1
             cache.set(otp_store_key, record, timeout=120)
             return Response({"error:Not  valid OTP please try again"}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        cache.delete(otp_store_key)
+        
         return Response(
             {
                 "Successfully:Successfully created account"

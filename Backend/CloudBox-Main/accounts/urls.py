@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import Login, Register, Logout
-urls_pattern = [
+from .views import Login, Register, Logout, RequestOTPView, VarifyOTP
+
+
+urlpatterns = [
     path('/login', Login.as_view(), name='login'),
     path('/register', Register.as_view(), name='register'),
-    path('/logout', Logout.as_view, name='logout')
+    path('/logout', Logout.as_view, name='logout'),
+    path('/otp', RequestOTPView.as_view(), name='OTP_register'),
+    path('varify_otp', VarifyOTP.as_view(), name='VarifyOTP')
 ]
