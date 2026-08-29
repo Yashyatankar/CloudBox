@@ -2,12 +2,16 @@ import random
 
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.views import APIViews
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
-# Create your views here.
 
-class Register(APIViews):
+
+# Create your views here.
+MAX_VARIFICATION = 5
+
+
+class Register(APIView):
 
     def post(request):
 
@@ -17,13 +21,13 @@ class Register(APIViews):
 
 
 
-class Login(APIViews):
+class Login(APIView):
     def get(request):
 
         return Response('hello')
 
 
-class Logout(APIViews):
+class Logout(APIView):
 
     def get(request):
 
@@ -56,11 +60,45 @@ class RequestOTPView(APIView):
             cache.incr(count_limit)
 
         otp_code = str(random.randint(100000, 999999))
-        otp_store_key = f"otp:{email}"
+        otp_store_key = f"otp:login:{email}"
 
-        cache.set(otp_store_key, otp_code, timeout=300)
+        cache.set(otp_store_key, {"code":otp_code, "attempt":0}, timeout=300)
 
         return Response({
             "message": "OTP sent successfully.",
             "expires_in_seconds": 300
         }, status=status.HTTP_200_OK)
+
+
+class VarifyOTP(APIView):
+
+    def post(self, request):
+
+        email = request.data.get('email', '').strip().lower() 
+        otp_store_key = f"otp:login:{email}"
+
+        input_otp = request.data.get('otp', '').strip()
+
+        if not input_otp and not email:
+            return Response({"error:The varification may be wrong or expired please try again"}, status=status.HTTP_400_BAD_REQUEST)
+
+        record = cache.get(otp_store_key)
+
+        if not record:
+            return Response({"error:OTP expired or not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if record["attempt"] > MAX_VARIFICATION:
+            cache.delete(otp_store_key)
+            return Response({"error:Too many requests please try again letter"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        if input_otp != record:
+            record["attempts"] += 1
+            cache.set(otp_store_key, record, timeout=120)
+            return Response({"error:Not  valid OTP please try again"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {
+                "Successfully:Successfully created account"
+            },
+            status=status.HTTP_200_OK
+        ) 
