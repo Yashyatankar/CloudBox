@@ -1,5 +1,6 @@
 import random
 
+from .models import User
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
@@ -7,7 +8,9 @@ from rest_framework.response import Response
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 # Create your views here.
 MAX_VARIFICATION = 5
@@ -15,25 +18,27 @@ MAX_VARIFICATION = 5
 
 class Register(APIView):
 
-    def post(request):
+    def post(self, request):
+        try:
+            userSer = UserSerializer
+            
+            if not userSer.is_valid():
 
-        userSer = UserSerializer
-        
-        if not userSer.is_valid():
+                return Response({"error:The details are not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"error:The details are not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            user = userSer.save()
 
-        user = userSer.save()
+            refresh = RefreshToken.for_user(user)
 
-        refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
+            request.session['access_token'] = access_token
+            request.session['refresh_token'] = refresh_token
+            request.session['user_id'] = user.id
+        except Exception as e:
 
-        request.session['access_token'] = access_token
-        request.session['refresh_token'] = refresh_token
-        request.session['user_id'] = user.id
-
+            return Response({"error:something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
             "message": "User registered successfully.",
@@ -42,18 +47,88 @@ class Register(APIView):
 
 
 
-class Login(APIView):
+# views.py
 
-    def get(request):
 
-        
+LOGIN_RATE_LIMIT_WINDOW = 900
+LOGIN_RATE_LIMIT_MAX = 5
+LOGIN_LOCKOUT_WINDOW = 900
+LOGIN_LOCKOUT_MAX = 5
 
-        return Response('hello')
+
+class LoginView(APIView):
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data['email'].strip().lower()
+        password = serializer.validated_data['password']
+        ip = self._get_client_ip(request)
+
+        # 1. IP-based rate limit
+        ip_key = f"login:ratelimit:ip:{ip}"
+        if cache.add(ip_key, 1, timeout=LOGIN_RATE_LIMIT_WINDOW):
+            ip_count = 1
+        else:
+            ip_count = cache.incr(ip_key)
+
+        if ip_count > LOGIN_RATE_LIMIT_MAX:
+            return Response({"error": "Too many login attempts. Try again later."},
+                             status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # 2. Account-based lockout
+        lockout_key = f"login:lockout:{email}"
+        failed_attempts = cache.get(lockout_key, 0)
+
+        if failed_attempts >= LOGIN_LOCKOUT_MAX:
+            return Response({"error": "Account temporarily locked. Try again later."},
+                             status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # 3. Check the person exists in the DB, and password matches
+        user = User.objects.filter(email__iexact=email).first()
+
+        if user is None or not user.check_password(password):
+            if cache.add(lockout_key, 1, timeout=LOGIN_LOCKOUT_WINDOW):
+                pass
+            else:
+                cache.incr(lockout_key)
+            return Response({"error": "Invalid email or password"},
+                             status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.is_active:
+            return Response({"error": "Invalid email or password"},
+                             status=status.HTTP_400_BAD_REQUEST)
+
+        # 4. Success — clear lockout, issue JWT, store it in Redis-backed session
+        cache.delete(lockout_key)
+
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        request.session['access_token'] = access_token
+        request.session['refresh_token'] = refresh_token
+        request.session['user_id'] = user.id
+
+        return Response({
+            "message": "Login successful.",
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        }, status=status.HTTP_200_OK)
+
+    def _get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
 
 
 class Logout(APIView):
 
-    def get(request):
+    def get(self, request):
 
         return Response('logout')
 
