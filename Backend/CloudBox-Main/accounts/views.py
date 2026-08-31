@@ -20,7 +20,7 @@ class Register(APIView):
 
     def post(self, request):
         try:
-            userSer = UserSerializer
+            userSer = UserSerializer(data=request.data)
             
             if not userSer.is_valid():
 

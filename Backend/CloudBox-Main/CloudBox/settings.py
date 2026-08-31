@@ -67,23 +67,14 @@ CACHES = {
 }
 
 #DRF
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-
-}
+REST_FRAMEWORK = { 
+    "DEFAULT_PERMISSION_CLASSES": 
+    [ "rest_framework.permissions.AllowAny", ], 
+    "DEFAULT_AUTHENTICATION_CLASSES": 
+    [ "rest_framework.authentication.BasicAuthentication",
+      "rest_framework.authentication.SessionAuthentication",
+     "rest_framework_simplejwt.authentication.JWTAuthentication", ]
+     , }
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -169,12 +160,6 @@ STATIC_URL = 'static/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
 
 
 MAILERS = {
