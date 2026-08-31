@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     'accounts',
+    "rest_framework_simplejwt"
     'redis'
 
 ]
@@ -73,6 +74,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
 

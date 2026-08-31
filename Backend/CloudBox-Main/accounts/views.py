@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import UserSerializer
 
 
 # Create your views here.
@@ -15,14 +17,36 @@ class Register(APIView):
 
     def post(request):
 
+        userSer = UserSerializer
         
+        if not userSer.is_valid():
 
-        return Response('register')
+            return Response({"error:The details are not valid"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = userSer.save()
+
+        refresh = RefreshToken.for_user(user)
+
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        request.session['access_token'] = access_token
+        request.session['refresh_token'] = refresh_token
+        request.session['user_id'] = user.id
+
+
+        return Response({
+            "message": "User registered successfully.",
+            "email": user.email,
+        }, status=status.HTTP_201_CREATED)
 
 
 
 class Login(APIView):
+
     def get(request):
+
+        
 
         return Response('hello')
 
