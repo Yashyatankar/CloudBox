@@ -1,7 +1,6 @@
 import random
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import User
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,14 +16,14 @@ MAX_VARIFICATION = 5
 
 
 class Register(APIView):
-
+    permission_classes = [AllowAny]
     def post(self, request):
         try:
             userSer = UserSerializer(data=request.data)
             
             if not userSer.is_valid():
 
-                return Response({"error:The details are not valid"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(UserSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             user = userSer.save()
 
@@ -36,18 +35,21 @@ class Register(APIView):
             request.session['access_token'] = access_token
             request.session['refresh_token'] = refresh_token
             request.session['user_id'] = user.id
+
         except Exception as e:
 
-            return Response({"error:something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+            print("REGISTER ERROR:", e)
+
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response({
             "message": "User registered successfully.",
             "email": user.email,
-        }, status=status.HTTP_201_CREATED)
+       }, status=status.HTTP_201_CREATED)
 
-
-
-# views.py
 
 
 LOGIN_RATE_LIMIT_WINDOW = 900
@@ -124,13 +126,26 @@ class LoginView(APIView):
         if x_forwarded_for:
             return x_forwarded_for.split(',')[0].strip()
         return request.META.get('REMOTE_ADDR')
+    
+
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated)
 
 
-class Logout(APIView):
 
-    def get(self, request):
+    def post(self, request):
+        if not IsAuthenticated:
+            return Response({"error":"your are not logged in"}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
 
-        return Response('logout')
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+
+
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class RequestOTPView(APIView):
