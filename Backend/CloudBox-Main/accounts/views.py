@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer
+from .serializers import UserSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -23,7 +23,7 @@ class Register(APIView):
             
             if not userSer.is_valid():
 
-                return Response(UserSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(userSer.errors, status=status.HTTP_400_BAD_REQUEST)
 
             user = userSer.save()
 
@@ -61,8 +61,11 @@ LOGIN_LOCKOUT_MAX = 5
 class LoginView(APIView):
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        
+        serializer = LoginSerializer(data=request.data)
+
         if not serializer.is_valid():
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         email = serializer.validated_data['email'].strip().lower()
