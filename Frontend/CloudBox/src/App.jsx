@@ -1,8 +1,10 @@
 import React from 'react'
-
+import AuthPage from './Components/AuthPage.jsx'
 const App = () => {
   return (
-    <div className='bg-amber-400'>App</div>
+    <>
+      <AuthPage/>
+    </>
   )
 }
 
