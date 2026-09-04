@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer, LoginSerializer
+from .utils import send_otp_email
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -180,7 +181,7 @@ class RequestOTPView(APIView):
         otp_store_key = f"otp:login:{email}"
         cache.set(otp_store_key, {"code": otp_code, "attempts": 0}, timeout=OTP_TTL)
 
-        # send_otp_email.delay(email, otp_code)
+        send_otp_email(email, otp_code)
 
         return Response({
             "message": "OTP sent successfully.",
@@ -212,7 +213,6 @@ class VerifyOTPView(APIView):
             cache.set(otp_store_key, record, timeout=OTP_TTL)
             return Response({"error": "Incorrect OTP. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # correct — burn the OTP, then actually log the user in
         cache.delete(otp_store_key)
 
         user = User.objects.filter(email__iexact=email).first()

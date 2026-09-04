@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-    baseURL: "http://127.0.0.1:8000/accounts",
+    baseURL: "http://127.0.0.1:8000/accounts/",
     timeout: 5000,
     withCredentials: true
 });
@@ -16,7 +16,7 @@ function normalizeError(error) {
 
 export async function requestOtp(email) {
     try {
-        const response = await instance.post("/Request_otp", { email });
+        const response = await instance.post("Request_otp/", { email });
         return response.data;
     } catch (error) {
         normalizeError(error);
