@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { requestOtp, verifyOtp } from "../api/otpApi";
+import { requestOtp, verifyOtp } from "../Apis/otpApi";
 
 const RESEND_COOLDOWN = 30; // seconds before "resend" is clickable again
 

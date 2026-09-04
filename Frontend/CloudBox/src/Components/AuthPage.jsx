@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { registerUser, loginUser } from "../Apis/LoginApi";
+import { useNavigate } from "react-router-dom";
 
 function AuthPage() {
+    const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
 
     const [formData, setFormData] = useState({
@@ -42,8 +44,8 @@ function AuthPage() {
                 });
             }
 
-            // success — session cookie is already set by the browser here
-            // e.g. navigate("/dashboard") if using react-router
+            navigate("/login_otp");
+            
 
         } catch (err) {
             if (err.details && typeof err.details === "object") {
@@ -235,6 +237,7 @@ function AuthPage() {
                         {isLogin ? "Don't have an account?" : "Already have an account?"}
                         <button
                             onClick={() => { setIsLogin(!isLogin); setError({}); }}
+                            
                             className="ml-1 text-white font-medium hover:underline"
                         >
                             {isLogin ? "Register" : "Login"}
