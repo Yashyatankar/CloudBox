@@ -2,7 +2,7 @@ import axios from "axios";
 
 const instance = axios.create({
     baseURL: "http://127.0.0.1:8000/accounts/",
-    timeout: 5000,
+    timeout: 30000,
     withCredentials: true
 });
 
@@ -25,7 +25,7 @@ export async function requestOtp(email) {
 
 export async function verifyOtp(email, otp) {
     try {
-        const response = await instance.post("/varify_otp", {
+        const response = await instance.post("varify_otp/", {
             email,
             otp
         });

@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { requestOtp, verifyOtp } from "../Apis/otpApi";
+import { useNavigate } from "react-router-dom";
 
 const RESEND_COOLDOWN = 30; // seconds before "resend" is clickable again
 
 function OtpPage({ onSuccess, onBack }) {
+
+    const navigation = useNavigate();
+
     const [step, setStep] = useState("email"); // "email" | "otp"
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
@@ -52,6 +56,7 @@ function OtpPage({ onSuccess, onBack }) {
         try {
             await verifyOtp(email.trim().toLowerCase(), otp.trim());
             onSuccess?.();
+            navigation('/dashboard')
         } catch (err) {
             setError(err.message || "Incorrect or expired OTP.");
         } finally {
