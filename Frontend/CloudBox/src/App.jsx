@@ -11,6 +11,7 @@ const App = () => {
         <Route path="/dashboard" element={<Panel />} />
       </Routes>
     </BrowserRouter>
+    
   )
 }
 
