@@ -28,6 +28,7 @@ export async function loginUser(payload) {
     const response = await instance.post('/accounts/login/', payload);
     return response.data;
   } catch (error) {
+    console.log("FULL ERROR:", error.response?.data);
     normalizeError(error);
   }
 }

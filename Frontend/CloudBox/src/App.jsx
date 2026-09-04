@@ -1,22 +1,16 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthPage from './Components/AuthPage.jsx'
 import Panel from './Components/Panel.jsx'
-import { BrowserRouter } from "react-router-dom";
 
 const App = () => {
   return (
-    <>
-      <BrowserRouter>
-        <AuthPage />
-        <Panel />
-      </BrowserRouter>
-
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<AuthPage />} />
         <Route path="/dashboard" element={<Panel />} />
       </Routes>
-
-    </>
+    </BrowserRouter>
   )
 }
 

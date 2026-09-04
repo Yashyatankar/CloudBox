@@ -174,6 +174,7 @@ function AuthPage() {
                                 placeholder="Username"
                                 value={formData.username}
                                 onChange={handleChange}
+                                
                                 className="w-full mt-2 h-11 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/30 outline-none focus:border-white/50 transition"
                             />
                             {error.username && <p className="text-xs text-red-300 mt-1">{error.username}</p>}
