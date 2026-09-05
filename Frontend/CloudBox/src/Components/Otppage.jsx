@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { requestOtp, verifyOtp } from "../Apis/otpApi";
 import { useNavigate } from "react-router-dom";
 
-const RESEND_COOLDOWN = 30; // seconds before "resend" is clickable again
+const RESEND_COOLDOWN = 30; 
 
 function OtpPage({ onSuccess, onBack }) {
 
     const navigation = useNavigate();
 
-    const [step, setStep] = useState("email"); // "email" | "otp"
+    const [step, setStep] = useState("email"); 
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
     const [error, setError] = useState("");
@@ -17,7 +17,6 @@ function OtpPage({ onSuccess, onBack }) {
 
     const timerRef = useRef(null);
 
-    // tick the resend cooldown down once a second while > 0
     useEffect(() => {
         if (cooldown <= 0) return;
         timerRef.current = setTimeout(() => setCooldown((c) => c - 1), 1000);

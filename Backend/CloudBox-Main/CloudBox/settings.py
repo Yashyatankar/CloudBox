@@ -46,7 +46,10 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     'accounts',
-    'redis'
+    'Files',
+    'redis',
+
+    "django-chunked-upload"
 
 ]
 
